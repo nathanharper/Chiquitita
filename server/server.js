@@ -1,5 +1,5 @@
 var exec = require('child_process').exec;
-var window_id = process.argv[2] || 92274691;
+var id = process.argv[2] || 92274691;
 
 require('net').createServer(function (socket) {
     // TODO: can we get IP from this?
