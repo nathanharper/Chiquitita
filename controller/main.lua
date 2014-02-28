@@ -1,8 +1,8 @@
 local socket = require "socket"
 local shape = require "shape"
-local address,port,tcp = "localhost",12345
 local pressed = {}
 local down = {}
+local tcp
 
 local isDown = love.keyboard.isDown
 local setColor = love.graphics.setColor
@@ -10,7 +10,7 @@ local setColor = love.graphics.setColor
 function love.load()
   tcp = socket.tcp()
   tcp:settimeout(0)
-  tcp:setpeername(address, port)
+  tcp:setpeername(ADDRESS, PORT)
   love.graphics.setBackgroundColor(0,0,0)
   load_shape_coords()
 end
@@ -80,9 +80,9 @@ function load_shape_coords()
   rpad:set_child(up, down, left, right)
 
   local x = shape.Circle:new(pad_radius+but_radius, pad_radius-but_radius, but_width)
-  local z = shape.Circle:new(pad_radius-but_width-but_radius, pad_radius-but_radius, but_width)
+  local a = shape.Circle:new(pad_radius-but_width-but_radius, pad_radius-but_radius, but_width)
   local s = shape.Circle:new(pad_radius-but_radius, pad_radius-but_radius*3, but_width)
-  local a = shape.Circle:new(pad_radius-but_radius, pad_radius+but_radius, but_width)
+  local z = shape.Circle:new(pad_radius-but_radius, pad_radius+but_radius, but_width)
   lpad:set_child(x, z, s, a)
 
   local start = shape.Rectangle:new(body_width/2-but_width-but_off-15, body_height/2-but_radius, but_width+15, but_width-10)
