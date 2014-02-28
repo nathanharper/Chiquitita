@@ -74,14 +74,20 @@ function load_shape_coords()
   local body = shape.Rectangle:new(pad_radius*2+x_off, pad_radius+y_off-body_height/2, body_width, body_height)
 
   local up = shape.Triangle:new(pad_radius-but_radius, pad_radius-but_width-but_radius, but_width, but_width, 'u')
-  local down = shape.Triangle:new(pad_radius-but_radius, pad_radius+but_width+but_radius, but_width, but_width, 'd')
-  local left = shape.Triangle:new(pad_radius-but_width-but_radius, pad_radius, but_width, but_width, 'l')
-  local right = shape.Triangle:new(pad_radius+but_width+but_radius, pad_radius, but_width, but_width, 'r')
+  local down = shape.Triangle:new(pad_radius-but_radius, pad_radius+but_radius, but_width, but_width, 'd')
+  local left = shape.Triangle:new(pad_radius-but_width-but_radius, pad_radius-but_radius, but_width, but_width, 'l')
+  local right = shape.Triangle:new(pad_radius+but_radius, pad_radius-but_radius, but_width, but_width, 'r')
   rpad:set_child(up, down, left, right)
 
-  local x = shape.Circle:new(pad_radius+but_width, pad_radius, but_width)
-  local z = shape.Circle:new(pad_radius-but_width, pad_radius, but_width)
-  lpad:set_child(x, z)
+  local x = shape.Circle:new(pad_radius+but_radius, pad_radius-but_radius, but_width)
+  local z = shape.Circle:new(pad_radius-but_width-but_radius, pad_radius-but_radius, but_width)
+  local s = shape.Circle:new(pad_radius-but_radius, pad_radius-but_radius*3, but_width)
+  local a = shape.Circle:new(pad_radius-but_radius, pad_radius+but_radius, but_width)
+  lpad:set_child(x, z, s, a)
+
+  local start = shape.Rectangle:new(body_width/2-but_width-but_off-15, body_height/2-but_radius, but_width+15, but_width-10)
+  local slct = shape.Rectangle:new(body_width/2+but_off, body_height/2-but_radius, but_width+15, but_width-10)
+  body:set_child(start, slct)
 
   love.draw = function()
 
@@ -101,7 +107,27 @@ function load_shape_coords()
 
     -- a and b buttons
     draw('x', x)
+    x:with_offset(tprint"a")
     draw('z', z)
+    z:with_offset(tprint"b")
+    draw('s', s)
+    s:with_offset(tprint"x")
+    draw('a', a)
+    a:with_offset(tprint"y")
+
+    draw('return', start)
+    start:with_offset(tprint("start", 1))
+    draw('rshift', slct)
+    slct:with_offset(tprint("select", 1))
+  end
+end
+
+function tprint(text, scale)
+  scale = scale or 2
+  return function(x, y)
+    setColor(255,255,255)
+    love.graphics.print(text, x+15, y+5, 0, scale, scale)
+    setColor(0,0,0)
   end
 end
 

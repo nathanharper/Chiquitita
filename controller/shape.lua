@@ -17,12 +17,13 @@ function Shape:set_child(...)
   end
 end
 
-function Shape:get_absolute_offset()
-  return self.x, self.y
+-- performs a function with absolute x and y passed
+function Shape:with_offset(func)
+  func(self:get_absolute_offset())
 end
 
-function Shape:draw()
-  print "Define this, idiot."
+function Shape:get_absolute_offset()
+  return self.x, self.y
 end
 
 local Circle = class("Circle", Shape)
