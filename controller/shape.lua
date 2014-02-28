@@ -26,9 +26,13 @@ function Shape:draw()
 end
 
 local Circle = class("Circle", Shape)
+function Circle:initialize(x, y, w, h)
+  Shape.initialize(self, x, y, w, h)
+  self.radius = w/2
+end
 function Circle:draw()
   local x,y = self:get_absolute_offset()
-  love.graphics.circle('fill', x, y, self.w/2)
+  love.graphics.circle('fill', x+self.radius, y+self.radius, self.radius)
 end
 
 local Rectangle = class("Rectangle", Shape)
@@ -49,11 +53,11 @@ end
 function Triangle:draw()
   local x,y = self:get_absolute_offset()
   local w,h = self.w,self.h
-  if dir == 'u' then
+  if self.dir == 'u' then
     love.graphics.polygon('fill', x+w/2,y , x,y+h , x+w,y+h)
-  elseif dir == 'd' then
+  elseif self.dir == 'd' then
     love.graphics.polygon('fill', x+w/2,y+h , x,y , x+w,y)
-  elseif dir == 'l' then
+  elseif self.dir == 'l' then
     love.graphics.polygon('fill', x,y+h/2 , x+w,y , x+w,y+h)
   else -- 'r'
     love.graphics.polygon('fill', x+w,y+h/2 , x,y , x,y+h)

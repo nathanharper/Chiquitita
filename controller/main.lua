@@ -69,8 +69,8 @@ function load_shape_coords()
   local but_off = 5
   local but_width = but_radius*2
 
-  local lpad = shape.Circle:new(pad_radius+x_off, pad_radius+y_off, pad_width)
-  local rpad = shape.Circle:new(pad_radius*3+body_width+x_off, pad_radius+y_off, pad_width)
+  local lpad = shape.Circle:new(x_off, y_off, pad_width)
+  local rpad = shape.Circle:new(pad_radius*2+body_width+x_off, y_off, pad_width)
   local body = shape.Rectangle:new(pad_radius*2+x_off, pad_radius+y_off-body_height/2, body_width, body_height)
 
   local up = shape.Triangle:new(pad_radius-but_radius, pad_radius-but_width-but_radius, but_width, but_width, 'u')
@@ -80,8 +80,8 @@ function load_shape_coords()
   rpad:set_child(up, down, left, right)
 
   local x = shape.Circle:new(pad_radius+but_width, pad_radius, but_width)
-  local y = shape.Circle:new(pad_radius-but_width, pad_radius, but_width)
-  lpad:set_child(x, y)
+  local z = shape.Circle:new(pad_radius-but_width, pad_radius, but_width)
+  lpad:set_child(x, z)
 
   love.draw = function()
 
@@ -101,7 +101,7 @@ function load_shape_coords()
 
     -- a and b buttons
     draw('x', x)
-    draw('y', y)
+    draw('z', z)
   end
 end
 
