@@ -2,15 +2,15 @@ local socket = require "socket"
 local shape = require "shape"
 local pressed = {}
 local down = {}
-local tcp
+local udp
 
 local isDown = love.keyboard.isDown
 local setColor = love.graphics.setColor
 
 function love.load()
-  tcp = socket.tcp()
-  tcp:settimeout(0)
-  tcp:setpeername(ADDRESS, PORT)
+  udp = socket.udp()
+  udp:settimeout(0)
+  udp:setpeername(ADDRESS, PORT)
   love.graphics.setBackgroundColor(0,0,0)
   load_shape_coords()
 end
@@ -46,17 +46,17 @@ end
 
 -- equivalent of xdotool's "keyup"
 function send_release_event(key)
-  tcp:send(key.." up")
+  udp:send(key.." up")
 end
 
 -- equivalent of xdotool's "keydown"
 function send_down_event(key)
-  tcp:send(key.." down")
+  udp:send(key.." down")
 end
 
 -- equivalent of xdotool's "key"
 function send_press_event(key)
-  tcp:send(key.." press")
+  udp:send(key.." press")
 end
 
 function load_shape_coords()
