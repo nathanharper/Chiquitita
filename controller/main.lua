@@ -1,13 +1,11 @@
 local socket = require "socket"
+local shape = require "shape"
 local address,port,tcp = "localhost",12345
 local pressed = {}
 local down = {}
+
 local isDown = love.keyboard.isDown
 local setColor = love.graphics.setColor
-local circle = love.graphics.circle
-local rectangle = love.graphics.rectangle
-local polygon = love.graphics.polygon
-local draw_controller
 
 function love.load()
   tcp = socket.tcp()
@@ -28,10 +26,6 @@ function love.update(dt)
     end
     return true
   end)
-end
-
-function love.draw()
-  draw_controller()
 end
 
 function love.keypressed(key)
@@ -65,59 +59,49 @@ function send_press_event(key)
   tcp:send(key.." press")
 end
 
--- TODO: clean up. find/write a lib that draws objects relative to others
 function load_shape_coords()
   local x_off,y_off = 20,20
   local pad_radius = 100
+  local pad_width = pad_radius*2
   local body_width = 200
   local body_height = 60
   local but_radius = 20
   local but_off = 5
   local but_width = but_radius*2
 
-  local left_pad_x = pad_radius*3+body_width+x_off
-  local left_pad_y = pad_radius+y_off
+  local lpad = shape.Circle:new(pad_radius+x_off, pad_radius+y_off, pad_width)
+  local rpad = shape.Circle:new(pad_radius*3+body_width+x_off, pad_radius+y_off, pad_width)
+  local body = shape.Rectangle:new(pad_radius*2+x_off, pad_radius+y_off-body_height/2, body_width, body_height)
 
-  local lpx = pad_radius+x_off
-  local lpy = pad_radius+y_off
-  local bx = pad_radius*2+x_off
-  local by = left_pad_y-body_height/2
-  local upty = left_pad_y-but_width-but_off
-  local upby = left_pad_y-but_radius
-  local upbr = left_pad_x+but_radius
-  local upbl = left_pad_x-but_radius
-  local xl = pad_radius+x_off+but_off+but_radius
-  local xr = pad_radius+y_off
-  local zl = pad_radius+x_off-but_off-but_radius
-  local zr = pad_radius+y_off
-  local dby = left_pad_y+but_width+but_off
-  local flarg = left_pad_y+but_radius
-  draw_controller = function()
+  local up = shape.Triangle:new(pad_radius-but_radius, pad_radius-but_width-but_radius, but_width, but_width, 'u')
+  local down = shape.Triangle:new(pad_radius-but_radius, pad_radius+but_width+but_radius, but_width, but_width, 'd')
+  local left = shape.Triangle:new(pad_radius-but_width-but_radius, pad_radius, but_width, but_width, 'l')
+  local right = shape.Triangle:new(pad_radius+but_width+but_radius, pad_radius, but_width, but_width, 'r')
+  rpad:set_child(up, down, left, right)
+
+  local x = shape.Circle:new(pad_radius+but_width, pad_radius, but_width)
+  local y = shape.Circle:new(pad_radius-but_width, pad_radius, but_width)
+  lpad:set_child(x, y)
+
+  love.draw = function()
+
     -- draw controller
     setColor(255,255,255)
-    circle('fill', lpx, lpy, pad_radius) -- left pad
-    circle('fill', left_pad_x, left_pad_y, pad_radius) -- right pad
-    rectangle('fill', bx, by, body_width, body_height)
+    lpad:draw()
+    rpad:draw()
+    body:draw()
 
     setColor(0,0,0)
 
     -- draw arrows
-    draw(polygon, 'up', 'fill', left_pad_x, upty,
-                                upbl, upby,
-                                upbr, upby)
-    draw(polygon, 'down', 'fill', left_pad_x, dby,
-                                left_pad_x-but_radius, left_pad_y+but_radius,
-                                left_pad_x+but_radius, left_pad_y+but_radius)
-    draw(polygon, 'left', 'fill', left_pad_x-but_width-but_off, left_pad_y,
-                                left_pad_x-but_radius, left_pad_y-but_radius,
-                                left_pad_x-but_radius, flarg)
-    draw(polygon, 'right', 'fill', left_pad_x+but_width+but_off, left_pad_y,
-                                left_pad_x+but_radius, left_pad_y-but_radius,
-                                left_pad_x+but_radius, flarg)
+    draw('up', up)
+    draw('down', down)
+    draw('left', left)
+    draw('right', right)
 
     -- a and b buttons
-    draw(circle, 'x', 'fill', xl, xr, but_radius)
-    draw(circle, 'z', 'fill', zl, zr, but_radius)
+    draw('x', x)
+    draw('y', y)
   end
 end
 
@@ -132,10 +116,10 @@ function filter(tab, func)
   return res
 end
 
-function draw(method, key, ...)
+function draw(key, the_shape)
   if pressed[key] or down[key] then
     setColor(255,0,0)
-    method(...)
+    the_shape:draw()
     setColor(0,0,0)
-  else method(...) end
+  else the_shape:draw() end
 end
