@@ -1,7 +1,6 @@
 local socket = require "socket"
 local shape = require "shape"
-local pressed = {}
-local down = {}
+
 local udp
 
 local isDown = love.keyboard.isDown
@@ -15,48 +14,18 @@ function love.load()
   load_shape_coords()
 end
 
-function love.update(dt)
-  local wait = 0.2 -- wait time for a key to be considered "down"
-  local now = love.timer.getTime()
-  pressed = filter(pressed, function(key, val)
-    if isDown(key) and now - val >= wait then
-      down[key] = true
-      send_down_event(key)
-      return false
-    end
-    return true
-  end)
-end
-
 function love.keypressed(key)
-  if not pressed[key] then
-    pressed[key] = love.timer.getTime()
-  end
+  check_enabled(key, "down")
 end
 
 function love.keyreleased(key)
-  if down[key] then
-    down[key] = nil
-    send_release_event(key)
-  else
-    pressed[key] = nil
-    send_press_event(key)
+  check_enabled(key, "up")
+end
+
+function check_enabled(key, action)
+  if ENABLED[key] then
+    udp:send(key .. " " .. action)
   end
-end
-
--- equivalent of xdotool's "keyup"
-function send_release_event(key)
-  udp:send(key.." up")
-end
-
--- equivalent of xdotool's "keydown"
-function send_down_event(key)
-  udp:send(key.." down")
-end
-
--- equivalent of xdotool's "key"
-function send_press_event(key)
-  udp:send(key.." press")
 end
 
 function load_shape_coords()
@@ -131,19 +100,8 @@ function tprint(text, scale)
   end
 end
 
--- operates on unordered tables, provides key and val to func.
-function filter(tab, func)
-  local res = {}
-  for i,v in pairs(tab) do
-    if func(i, v) then
-      res[i] = v
-    end
-  end
-  return res
-end
-
 function draw(key, the_shape)
-  if pressed[key] or down[key] then
+  if isDown(key) then
     setColor(255,0,0)
     the_shape:draw()
     setColor(0,0,0)
