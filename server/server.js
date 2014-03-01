@@ -1,30 +1,24 @@
 var exec = require('child_process').exec;
-var id = process.argv[2] || 92274691;
+var id = process.argv[2] || 0;
+var port = process.argv[3] || 12345;
+
+var ENABLED = ['x','z','s','a','return','rshift','up','down','left','right'];
+var DIRS = ['up','down'];
 
 require('dgram').createSocket('udp4').on("message", function(msg, rinfo) {
-        var str = msg.toString();
-        var parts = str.split(' ').map(function(val) {
-            // CLI escaping could be better...
-            return val.replace("'", "'\"'\"'");
-        });
-        var key = firstUpper(parts[0]);
-        var action = parts[1];
-        var command;
-        console.log(str);
-        if (action == 'press') {
-            command = "xdotool key --window "+id+" '"+key+"'";
-        }
-        else {
-            command = "xdotool key"+action+" --window "+id+" '"+key+"'";
-        }
-	command = "export DISPLAY=:0; " + command;
-        console.log(command);
-        exec(command)
-}).bind(12345);
+    var parts = msg.toString().split(' ');
+    if (parts.length < 2) return;
+    var key = parts[0];
+    var action = parts[1];
+    if (ENABLED.indexOf(key) < 0 || DIRS.indexOf(action) < 0) return;
+    key = firstUpper(key);
+    var command = "export DISPLAY=:0; xdotool key"+action+" --window "+id+" '"+key+"'";
+    console.log(command);
+    exec(command)
+}).bind(port);
 
 function firstUpper(str) {
-    if (str.length <= 1) {
+    if (str.length <= 1)
         return str.toUpperCase();
-    }
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
