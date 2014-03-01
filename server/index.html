@@ -1,0 +1,30 @@
+<html>
+<head>
+    <title>Twitch Controller</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script type="text/javascript">
+        var socket = io.connect();
+        socket.on('connect', function() {
+            $(function() {
+                $('window').keydown(function(event) {
+                    socket.emit('key', {
+                        'key': String.fromCharCode(event.with),
+                        'action': 'down'
+                    });
+                }).keyup(function(event) {
+                    socket.emit('key', {
+                        'key': String.fromCharCode(event.with),
+                        'action': 'up'
+                    });
+                });
+            });
+        }).on('disconnect', function() {
+            alert("You've been disconnected!");
+        });
+    </script>
+</head>
+<body>
+    <h1>YAY</h1>
+</body>
+</html>
