@@ -1,5 +1,22 @@
+<!DOCTYPE html>
 <html>
+
 <head>
+
+  <meta charset="UTF-8">
+
+  <!--
+  LICENSE FOR CSS CONTROLLER
+
+Copyright (c) 2014 by Tim Pietrusky (http://codepen.io/TimPietrusky/pen/oJIcy)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+-->
+
     <title>Twitch Controller</title>
     <script src="/socket.io/socket.io.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
@@ -10,24 +27,44 @@
             '37': 'left',
             '39': 'right',
             '13': 'return',
-            '16': 'rshift',
+            //'16': 'rshift',
             '88': 'x',
             '90': 'z',
             '83': 's',
             '65': 'a'
         };
+        var PRESSED = [];
         var socket = io.connect();
         var make_key_func = function(action) {
+            var dismiss_func;
+            if (action === 'up') {
+                dismiss_func = function(key) {
+                    var idx = PRESSED.indexOf(key);
+                    if (idx < 0) return true;
+                    PRESSED.splice(idx, 1);
+                    $('button.'+key).removeClass('pressed');
+                    return false;
+                };
+            } else {
+                dismiss_func = function(key){
+                    if (PRESSED.indexOf(key) >= 0) return true;
+                    PRESSED.push(key);
+                    $('button.'+key).addClass('pressed');
+                    return false;
+                };
+            }
             return function(event) {
-                var key = event.which.toString();
-                if (!KEYS[key]) return;
+                var key = KEYS[event.which.toString()];
+                if (!key || dismiss_func(key)) return;
                 socket.emit('key', {
-                    'key': KEYS[key],
+                    'key': key,
                     'action': action
                 });
+                console.log('emitted '+key+' '+action);
             };
         };
         socket.on('connect', function() {
+            $('#status').text('Status: connected').css('color', 'green');
             $(function() {
                 console.log('Connected!');
                 $(document).keydown(
@@ -37,11 +74,1016 @@
                 );
             });
         }).on('disconnect', function() {
-            alert("You've been disconnected!");
+            $('#status').text('Status: disconnected').css('color', 'red');
         });
     </script>
+
+  <style>@import url(http://fonts.googleapis.com/css?family=Anton);
+body {
+  background: url(http://subtlepatterns.com/patterns/carbon_fibre.png);
+  margin-top: 20px;
+  font-family: 'Anton', sans-serif;
+}
+/* base */
+.snes {
+  position: relative;
+  width: 300px;
+  height: 200px;
+  margin: 0 auto;
+  background: #b7b7b7;
+}
+/* "L" and "R" shoulder buttons */
+.snes:before,
+.snes:after {
+  position: absolute;
+  z-index: -1;
+  top: -4px;
+  left: -50px;
+  height: 20px;
+  width: 105px;
+  background: #B6B6B6;
+  background-image: linear-gradient(top, rgba(124, 124, 124, 0.35) 0%, rgba(0, 0, 0, 0) 100%);
+  content: '';
+  border-top-left-radius: 50px 20px;
+  border-top-right-radius: 6px;
+  box-shadow: inset -6px -17px 5px rgba(0, 0, 0, 0.2);
+}
+.snes:after {
+  left: auto;
+  right: -50px;
+  border-top-right-radius: 50px 20px;
+  border-top-left-radius: 6px;
+}
+.snes > .left,
+.snes > .right {
+  position: absolute;
+  left: -110px;
+  top: 0;
+  height: 220px;
+  width: 220px;
+  background: #b7b7b7;
+  border-radius: 50%;
+}
+.snes > .right {
+  left: auto;
+  right: -110px;
+}
+.snes > .left .pad {
+  position: absolute;
+  height: 120px;
+  width: 120px;
+  left: 50%;
+  top: 50%;
+  margin: -60px 0 0 -60px;
+  background: #b7b7b7;
+  border-radius: 50%;
+  box-shadow: inset 0 0 1px rgba(120, 120, 120, 0.6), inset 0 2px 2px rgba(0, 0, 0, 0.1), 0 2px 2px rgba(240, 240, 240, 0.4);
+}
+.snes > .left .pad .control {
+  position: absolute;
+  height: 30px;
+  width: 30px;
+  background: #636363;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.6), 0 0 0 3px rgba(60, 60, 60, 0.2), 0 0 0 4px rgba(60, 60, 60, 0.2);
+  border-radius: 2px;
+}
+.snes > .left .pad .top {
+  top: 15px;
+  left: 50%;
+  margin: 0 0 0 -15px;
+}
+.snes > .left .pad .left {
+  top: 45px;
+  left: 15px;
+}
+.snes > .left .pad .right {
+  top: 45px;
+  right: 15px;
+}
+.snes > .left .pad .control.right:before {
+  transform: rotate(90deg) translate(-3px, -5px);
+}
+.snes > .left .pad .bottom {
+  bottom: 15px;
+  left: 50%;
+  margin: 0 0 0 -15px;
+}
+/* Overlap the other controls to hide box-shadow */
+.snes > .left .pad .middle {
+  height: 34px;
+  width: 34px;
+  z-index: 5;
+  top: 43px;
+  left: 50%;
+  margin: 0 0 0 -17px;
+  box-shadow: none;
+  border-radius: 3px;
+}
+.snes > .left .pad .middle:after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -35% 0 0 -35%;
+  content: '';
+  background: #636363;
+  height: 70%;
+  width: 70%;
+  border-radius: 100%;
+  box-shadow: inset 0 0 2px rgba(120, 120, 120, 0.6), inset 0 2px 8px rgba(0, 0, 0, 0.1), 0 2px 2px rgba(240, 240, 240, 0.2);
+}
+/* Triangle with rounded corners */
+.arrow {
+  top: 14px;
+  left: 4.5px;
+  position: absolute;
+  z-index: 20;
+  height: 10px;
+  width: 21px;
+  background: #5e5e5e;
+  border-radius: 4px;
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
+  transform: scale(1.05, 1);
+  transform-origin: 50% 10%;
+  box-shadow: 0 1px 1px rgba(240, 240, 240, 0.25);
+}
+.arrow:before {
+  position: absolute;
+  z-index: -1;
+  left: 4px;
+  top: -4px;
+  content: '';
+  height: 7px;
+  width: 20px;
+  background: #5e5e5e;
+  border-radius: 4px;
+  transform: rotate(60deg);
+  box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+}
+.arrow:after {
+  position: absolute;
+  z-index: -1;
+  left: -3px;
+  top: -4px;
+  content: '';
+  height: 7px;
+  width: 20px;
+  background: #5e5e5e;
+  border-radius: 4px;
+  transform: rotate(-60deg);
+  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+/* Arrow: left */
+.snes > .left .pad .left .arrow {
+  transform: scale(1.15, 1.1) rotate(-90deg);
+  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+.snes > .left .pad .left .arrow:after {
+  box-shadow: 0 -1px 1px rgba(240, 240, 240, 0.25);
+}
+.snes > .left .pad .left .arrow:before {
+  box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+}
+/* Arrow: right */
+.snes > .left .pad .right .arrow {
+  transform: scale(1.15, 1.1) rotate(90deg);
+  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+.snes > .left .pad .right .arrow:after {
+  box-shadow: 0 -1px 1px rgba(0, 0, 0, 0.2);
+}
+.snes > .left .pad .right .arrow:before {
+  box-shadow: 0 -1px 1px rgba(240, 240, 240, 0.25);
+}
+/* Arrow: bottom */
+.snes > .left .pad .bottom .arrow {
+  transform: scale(1.15, 1.1) rotate(180deg);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+.snes > .left .pad .bottom .arrow:after {
+  box-shadow: 1px -1px 1px rgba(0, 0, 0, 0.2);
+}
+.snes > .left .pad .bottom .arrow:before {
+  box-shadow: -1px -1px 1px rgba(240, 240, 240, 0.25);
+}
+/* 
+ * Middle stuff 
+ */
+.snes > .middle {
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  margin: 0 0 0 -60px;
+  width: 100px;
+  height: 40px;
+}
+/* logo */
+.snes > .middle .logo {
+  position: absolute;
+  top: -92px;
+  left: -55px;
+  background: #494949;
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+}
+.snes > .middle .logo.clone {
+  top: -84px;
+  left: -47px;
+}
+.snes > .middle .logo:before {
+  position: absolute;
+  z-index: 5;
+  bottom: -4px;
+  left: -6px;
+  content: '';
+  height: 5px;
+  width: 10px;
+  background: #494949;
+  border-radius: 50%;
+}
+.snes > .middle .logo:after {
+  position: absolute;
+  bottom: -5px;
+  left: -5px;
+  content: '';
+  height: 10px;
+  width: 10px;
+  background: #b7b7b7;
+  border-radius: 50%;
+}
+/* title */
+.snes > .middle .title {
+  position: absolute;
+  top: -100px;
+  left: -30px;
+  width: 200px;
+  font-style: italic;
+}
+.snes > .middle .title:before {
+  position: absolute;
+  content: 'SUPER NINTENDO';
+  font-size: 23px;
+  color: #494949;
+}
+.snes > .middle .title:after {
+  position: absolute;
+  top: 28px;
+  content: 'ENTERTAINMENT SYSTEM';
+  font-size: 11px;
+  color: #B7B7B7;
+  font-family: sans-serif;
+  background: #494949;
+  padding: 0 2px;
+}
+/* button */
+.snes > .middle button {
+  position: absolute;
+  top: 0;
+  background: linear-gradient(left, rgba(13, 13, 13, 0.4) 0%, rgba(120, 120, 120, 0.4) 50%, rgba(13, 13, 13, 0.4) 100%), #636363;
+  border: none;
+  height: 40px;
+  border-radius: 10px;
+  transform: rotate(45deg);
+  box-shadow: inset 0 0 1px rgba(120, 120, 120, 0.7), inset 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 2px 10px rgba(60, 60, 60, 0.3), inset 0 -2px 10px rgba(60, 60, 60, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.7), 0 2px 5px rgba(240, 240, 240, 0.8), 2px 0 5px rgba(240, 240, 240, 0.8), 0 -2px 5px rgba(60, 60, 60, 0.4), -2px 0 5px rgba(60, 60, 60, 0.6);
+}
+.snes > .middle button.start {
+  left: 60px;
+}
+.snes > .middle button:before {
+  position: absolute;
+  transform: rotate(-45deg);
+  font-style: italic;
+  font-size: 10px;
+}
+.snes > .middle button.select:before {
+  top: 32px;
+  left: 5px;
+  content: 'SELECT';
+}
+.snes > .middle button.start:before {
+  top: 30px;
+  left: 10px;
+  content: 'START';
+}
+/* 
+ * Right stuff 
+ */
+.snes > .right .circle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -45% 0 0 -45%;
+  height: 90%;
+  width: 90%;
+  background: #000;
+  border-radius: 100%;
+  background: linear-gradient(top, #7c7c7c 0%, #212121 100%);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.7), inset 0 2px 5px rgba(240, 240, 240, 0.5), inset 0 0 2px rgba(120, 120, 120, 0.6), inset 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 2px rgba(240, 240, 240, 0.6);
+}
+.snes > .right .circle .group-1,
+.snes > .right .circle .group-2 {
+  position: absolute;
+  left: 50px;
+  top: 50px;
+  height: 50px;
+  width: 60px;
+  background: #B7B7B7;
+  transform: rotate(-40deg);
+  box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.4);
+}
+.snes > .right .circle .group-2 {
+  top: 100px;
+  left: 95px;
+}
+.snes > .right .circle .group-1:before,
+.snes > .right .circle .group-1:after,
+.snes > .right .circle .group-2:before,
+.snes > .right .circle .group-2:after {
+  position: absolute;
+  content: '';
+  left: -25px;
+  height: 50px;
+  width: 50px;
+  background: #B7B7B7;
+  border-radius: 50%;
+}
+.snes > .right .circle .group-1:before,
+.snes > .right .circle .group-2:before {
+  box-shadow: -2px -1px 0 0px rgba(0, 0, 0, 0.2), -2px 1px 0 0px rgba(0, 0, 0, 0.2);
+}
+.snes > .right .circle .group-1:after,
+.snes > .right .circle .group-2:after {
+  left: auto;
+  right: -25px;
+  box-shadow: 2px -1px 0 0px rgba(0, 0, 0, 0.2), 2px 1px 0 0px rgba(0, 0, 0, 0.2);
+}
+.snes > .right .circle button {
+  position: absolute;
+  z-index: 5;
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  border: none;
+  transition: all .085s linear;
+  box-shadow: inset 0 -1px 0 4px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(0, 0, 0, 0.7), inset 0 2px 5px rgba(240, 240, 240, 0.6), inset 0 0 2px rgba(120, 120, 120, 0.6), inset 0 -2px 2px rgba(240, 240, 240, 0.6), 0 0 0 5px #b7b7b7 /* Overlap box shadow of the group pseudos */;
+  transform: rotate(40deg);
+}
+.snes > .right .circle button:active,
+.snes > .right .circle button.pressed {
+  box-shadow: inset 0 -1px 0 5px rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(0, 0, 0, 0.7), inset 0 -4px 5px rgba(240, 240, 240, 0.4), inset 0 0 2px rgba(120, 120, 120, 0.4), inset 0 2px 2px rgba(240, 240, 240, 0.4), 0 0 0 5px #b7b7b7 /* Overlap box shadow of the group pseudos */;
+  /*box-shadow: 
+    inset 0 -1px 0 2px rgba(0, 0, 0, .25),
+    inset 0 0 0 1px rgba(0, 0, 0, .7),
+    inset 0 2px 5px rgba(240, 240, 240, .2),
+    inset 0 0 2px rgba(120, 120, 120, .6),
+    inset 0 -2px 2px rgba(240, 240, 240, .2),
+    0 0 0 5px #B7B7B7 
+  ;*/
+}
+.snes > .right .circle button:after {
+  position: absolute;
+  content: '';
+  top: 2px;
+  left: 50%;
+  margin: 0 0 0 -17px;
+  width: 34px;
+  height: 30px;
+  background: linear-gradient(top, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 80%);
+  border-radius: 50%;
+}
+/* Button caption */
+.snes > .right .circle button:before {
+  position: absolute;
+  font-size: 18px;
+  font-weight: bold;
+  color: #B7B7B7;
+}
+.snes > .right .circle button.green {
+  top: 5px;
+  left: -20px;
+  background: #158733;
+}
+.snes > .right .circle button.green:before {
+  content: 'Y';
+  left: -20px;
+  top: 35px;
+}
+.snes > .right .circle button.blue {
+  top: 5px;
+  right: -20px;
+  background: #143ebc;
+}
+.snes > .right .circle button.blue:before {
+  content: 'X';
+  right: -20px;
+  top: -15px;
+}
+.snes > .right .circle button.yellow {
+  top: 5px;
+  left: -20px;
+  background: #e2bd00;
+}
+.snes > .right .circle button.yellow:before {
+  content: 'B';
+  left: -20px;
+  top: 35px;
+}
+.snes > .right .circle button.red {
+  top: 5px;
+  right: -20px;
+  background: #d10000;
+}
+.snes > .right .circle button.red:before {
+  content: 'A';
+  right: -20px;
+  top: -15px;
+}
+#status {
+    margin-top:45px;
+    clear:both;
+}
+/**/</style>
+
+  <script>
+    window.open    = function(){};
+    window.print   = function(){};
+    // Support hover state for mobile.
+    if (false) {
+      window.ontouchstart = function(){};
+    }
+
+    function __linkClick(e) {
+      parent.window.postMessage(this.href, '*');
+    };
+
+    function __bindToLinks() {
+      var __links = document.querySelectorAll('a');
+      for (var i = 0, l = __links.length; i < l; i++) {
+        if ( __links[i].getAttribute('data-t') == '_blank' ) {
+          __links[i].addEventListener('click', __linkClick, false);
+        }
+      }
+    }
+  </script>
+
+  <script>/**
+ * StyleFix 1.0.3 & PrefixFree 1.0.7
+ * @author Lea Verou
+ * MIT license
+ */
+
+(function(){
+
+if(!window.addEventListener) {
+  return;
+}
+
+var self = window.StyleFix = {
+  link: function(link) {
+    try {
+      // Ignore stylesheets with data-noprefix attribute as well as alternate stylesheets
+      if(link.rel !== 'stylesheet' || link.hasAttribute('data-noprefix')) {
+        return;
+      }
+    }
+    catch(e) {
+      return;
+    }
+
+    var url = link.href || link.getAttribute('data-href'),
+        base = url.replace(/[^\/]+$/, ''),
+        base_scheme = (/^[a-z]{3,10}:/.exec(base) || [''])[0],
+        base_domain = (/^[a-z]{3,10}:\/\/[^\/]+/.exec(base) || [''])[0],
+        base_query = /^([^?]*)\??/.exec(url)[1],
+        parent = link.parentNode,
+        xhr = new XMLHttpRequest(),
+        process;
+
+    xhr.onreadystatechange = function() {
+      if(xhr.readyState === 4) {
+        process();
+      }
+    };
+
+    process = function() {
+        var css = xhr.responseText;
+
+        if(css && link.parentNode && (!xhr.status || xhr.status < 400 || xhr.status > 600)) {
+          css = self.fix(css, true, link);
+
+          // Convert relative URLs to absolute, if needed
+          if(base) {
+            css = css.replace(/url\(\s*?((?:"|')?)(.+?)\1\s*?\)/gi, function($0, quote, url) {
+              if(/^([a-z]{3,10}:|#)/i.test(url)) { // Absolute & or hash-relative
+                return $0;
+              }
+              else if(/^\/\//.test(url)) { // Scheme-relative
+                // May contain sequences like /../ and /./ but those DO work
+                return 'url("' + base_scheme + url + '")';
+              }
+              else if(/^\//.test(url)) { // Domain-relative
+                return 'url("' + base_domain + url + '")';
+              }
+              else if(/^\?/.test(url)) { // Query-relative
+                return 'url("' + base_query + url + '")';
+              }
+              else {
+                // Path-relative
+                return 'url("' + base + url + '")';
+              }
+            });
+
+            // behavior URLs shoudn’t be converted (Issue #19)
+            // base should be escaped before added to RegExp (Issue #81)
+            var escaped_base = base.replace(/([\\\^\$*+[\]?{}.=!:(|)])/g,"\\$1");
+            css = css.replace(RegExp('\\b(behavior:\\s*?url\\(\'?"?)' + escaped_base, 'gi'), '$1');
+            }
+
+          var style = document.createElement('style');
+          style.textContent = css;
+          style.media = link.media;
+          style.disabled = link.disabled;
+          style.setAttribute('data-href', link.getAttribute('href'));
+
+          parent.insertBefore(style, link);
+          parent.removeChild(link);
+
+          style.media = link.media; // Duplicate is intentional. See issue #31
+        }
+    };
+
+    try {
+      xhr.open('GET', url);
+      xhr.send(null);
+    } catch (e) {
+      // Fallback to XDomainRequest if available
+      if (typeof XDomainRequest != "undefined") {
+        xhr = new XDomainRequest();
+        xhr.onerror = xhr.onprogress = function() {};
+        xhr.onload = process;
+        xhr.open("GET", url);
+        xhr.send(null);
+      }
+    }
+
+    link.setAttribute('data-inprogress', '');
+  },
+
+  styleElement: function(style) {
+    if (style.hasAttribute('data-noprefix')) {
+      return;
+    }
+    var disabled = style.disabled;
+
+    style.textContent = self.fix(style.textContent, true, style);
+
+    style.disabled = disabled;
+  },
+
+  styleAttribute: function(element) {
+    var css = element.getAttribute('style');
+
+    css = self.fix(css, false, element);
+
+    element.setAttribute('style', css);
+  },
+
+  process: function() {
+    // Linked stylesheets
+    $('link[rel="stylesheet"]:not([data-inprogress])').forEach(StyleFix.link);
+
+    // Inline stylesheets
+    $('style').forEach(StyleFix.styleElement);
+
+    // Inline styles
+    $('[style]').forEach(StyleFix.styleAttribute);
+  },
+
+  register: function(fixer, index) {
+    (self.fixers = self.fixers || [])
+      .splice(index === undefined? self.fixers.length : index, 0, fixer);
+  },
+
+  fix: function(css, raw, element) {
+    for(var i=0; i<self.fixers.length; i++) {
+      css = self.fixers[i](css, raw, element) || css;
+    }
+
+    return css;
+  },
+
+  camelCase: function(str) {
+    return str.replace(/-([a-z])/g, function($0, $1) { return $1.toUpperCase(); }).replace('-','');
+  },
+
+  deCamelCase: function(str) {
+    return str.replace(/[A-Z]/g, function($0) { return '-' + $0.toLowerCase() });
+  }
+};
+
+/**************************************
+ * Process styles
+ **************************************/
+(function(){
+  setTimeout(function(){
+    $('link[rel="stylesheet"]').forEach(StyleFix.link);
+  }, 10);
+
+  document.addEventListener('DOMContentLoaded', StyleFix.process, false);
+})();
+
+function $(expr, con) {
+  return [].slice.call((con || document).querySelectorAll(expr));
+}
+
+})();
+
+/**
+ * PrefixFree
+ */
+(function(root){
+
+if(!window.StyleFix || !window.getComputedStyle) {
+  return;
+}
+
+// Private helper
+function fix(what, before, after, replacement, css) {
+  what = self[what];
+
+  if(what.length) {
+    var regex = RegExp(before + '(' + what.join('|') + ')' + after, 'gi');
+
+    css = css.replace(regex, replacement);
+  }
+
+  return css;
+}
+
+var self = window.PrefixFree = {
+  prefixCSS: function(css, raw, element) {
+    var prefix = self.prefix;
+
+    // Gradient angles hotfix
+    if(self.functions.indexOf('linear-gradient') > -1) {
+      // Gradients are supported with a prefix, convert angles to legacy
+      css = css.replace(/(\s|:|,)(repeating-)?linear-gradient\(\s*(-?\d*\.?\d*)deg/ig, function ($0, delim, repeating, deg) {
+        return delim + (repeating || '') + 'linear-gradient(' + (90-deg) + 'deg';
+      });
+    }
+
+    css = fix('functions', '(\\s|:|,)', '\\s*\\(', '$1' + prefix + '$2(', css);
+    css = fix('keywords', '(\\s|:)', '(\\s|;|\\}|$)', '$1' + prefix + '$2$3', css);
+    css = fix('properties', '(^|\\{|\\s|;)', '\\s*:', '$1' + prefix + '$2:', css);
+
+    // Prefix properties *inside* values (issue #8)
+    if (self.properties.length) {
+      var regex = RegExp('\\b(' + self.properties.join('|') + ')(?!:)', 'gi');
+
+      css = fix('valueProperties', '\\b', ':(.+?);', function($0) {
+        return $0.replace(regex, prefix + "$1")
+      }, css);
+    }
+
+    if(raw) {
+      css = fix('selectors', '', '\\b', self.prefixSelector, css);
+      css = fix('atrules', '@', '\\b', '@' + prefix + '$1', css);
+    }
+
+    // Fix double prefixing
+    css = css.replace(RegExp('-' + prefix, 'g'), '-');
+
+    // Prefix wildcard
+    css = css.replace(/-\*-(?=[a-z]+)/gi, self.prefix);
+
+    return css;
+  },
+
+  property: function(property) {
+    return (self.properties.indexOf(property)? self.prefix : '') + property;
+  },
+
+  value: function(value, property) {
+    value = fix('functions', '(^|\\s|,)', '\\s*\\(', '$1' + self.prefix + '$2(', value);
+    value = fix('keywords', '(^|\\s)', '(\\s|$)', '$1' + self.prefix + '$2$3', value);
+
+    // TODO properties inside values
+
+    return value;
+  },
+
+  // Warning: Prefixes no matter what, even if the selector is supported prefix-less
+  prefixSelector: function(selector) {
+    return selector.replace(/^:{1,2}/, function($0) { return $0 + self.prefix })
+  },
+
+  // Warning: Prefixes no matter what, even if the property is supported prefix-less
+  prefixProperty: function(property, camelCase) {
+    var prefixed = self.prefix + property;
+
+    return camelCase? StyleFix.camelCase(prefixed) : prefixed;
+  }
+};
+
+/**************************************
+ * Properties
+ **************************************/
+(function() {
+  var prefixes = {},
+    properties = [],
+    shorthands = {},
+    style = getComputedStyle(document.documentElement, null),
+    dummy = document.createElement('div').style;
+
+  // Why are we doing this instead of iterating over properties in a .style object? Cause Webkit won't iterate over those.
+  var iterate = function(property) {
+    if(property.charAt(0) === '-') {
+      properties.push(property);
+
+      var parts = property.split('-'),
+        prefix = parts[1];
+
+      // Count prefix uses
+      prefixes[prefix] = ++prefixes[prefix] || 1;
+
+      // This helps determining shorthands
+      while(parts.length > 3) {
+        parts.pop();
+
+        var shorthand = parts.join('-');
+
+        if(supported(shorthand) && properties.indexOf(shorthand) === -1) {
+          properties.push(shorthand);
+        }
+      }
+    }
+  },
+  supported = function(property) {
+    return StyleFix.camelCase(property) in dummy;
+  }
+
+  // Some browsers have numerical indices for the properties, some don't
+  if(style.length > 0) {
+    for(var i=0; i<style.length; i++) {
+      iterate(style[i])
+    }
+  }
+  else {
+    for(var property in style) {
+      iterate(StyleFix.deCamelCase(property));
+    }
+  }
+
+  // Find most frequently used prefix
+  var highest = {uses:0};
+  for(var prefix in prefixes) {
+    var uses = prefixes[prefix];
+
+    if(highest.uses < uses) {
+      highest = {prefix: prefix, uses: uses};
+    }
+  }
+
+  self.prefix = '-' + highest.prefix + '-';
+  self.Prefix = StyleFix.camelCase(self.prefix);
+
+  self.properties = [];
+
+  // Get properties ONLY supported with a prefix
+  for(var i=0; i<properties.length; i++) {
+    var property = properties[i];
+
+    if(property.indexOf(self.prefix) === 0) { // we might have multiple prefixes, like Opera
+      var unprefixed = property.slice(self.prefix.length);
+
+      if(!supported(unprefixed)) {
+        self.properties.push(unprefixed);
+      }
+    }
+  }
+
+  // IE fix
+  if(self.Prefix == 'Ms'
+    && !('transform' in dummy)
+    && !('MsTransform' in dummy)
+    && ('msTransform' in dummy)) {
+    self.properties.push('transform', 'transform-origin');
+  }
+
+  self.properties.sort();
+})();
+
+/**************************************
+ * Values
+ **************************************/
+(function() {
+// Values that might need prefixing
+var functions = {
+  'linear-gradient': {
+    property: 'backgroundImage',
+    params: 'red, teal'
+  },
+  'calc': {
+    property: 'width',
+    params: '1px + 5%'
+  },
+  'element': {
+    property: 'backgroundImage',
+    params: '#foo'
+  },
+  'cross-fade': {
+    property: 'backgroundImage',
+    params: 'url(a.png), url(b.png), 50%'
+  }
+};
+
+functions['repeating-linear-gradient'] =
+functions['repeating-radial-gradient'] =
+functions['radial-gradient'] =
+functions['linear-gradient'];
+
+// Note: The properties assigned are just to *test* support.
+// The keywords will be prefixed everywhere.
+var keywords = {
+  'initial': 'color',
+  'zoom-in': 'cursor',
+  'zoom-out': 'cursor',
+  'box': 'display',
+  'flexbox': 'display',
+  'inline-flexbox': 'display',
+  'flex': 'display',
+  'inline-flex': 'display',
+  'grid': 'display',
+  'inline-grid': 'display',
+  'min-content': 'width'
+};
+
+self.functions = [];
+self.keywords = [];
+
+var style = document.createElement('div').style;
+
+function supported(value, property) {
+  style[property] = '';
+  style[property] = value;
+
+  return !!style[property];
+}
+
+for (var func in functions) {
+  var test = functions[func],
+    property = test.property,
+    value = func + '(' + test.params + ')';
+
+  if (!supported(value, property)
+    && supported(self.prefix + value, property)) {
+    // It's supported, but with a prefix
+    self.functions.push(func);
+  }
+}
+
+for (var keyword in keywords) {
+  var property = keywords[keyword];
+
+  if (!supported(keyword, property)
+    && supported(self.prefix + keyword, property)) {
+    // It's supported, but with a prefix
+    self.keywords.push(keyword);
+  }
+}
+
+})();
+
+/**************************************
+ * Selectors and @-rules
+ **************************************/
+(function() {
+
+var
+selectors = {
+  ':read-only': null,
+  ':read-write': null,
+  ':any-link': null,
+  '::selection': null
+},
+
+atrules = {
+  'keyframes': 'name',
+  'viewport': null,
+  'document': 'regexp(".")'
+};
+
+self.selectors = [];
+self.atrules = [];
+
+var style = root.appendChild(document.createElement('style'));
+
+function supported(selector) {
+  style.textContent = selector + '{}';  // Safari 4 has issues with style.innerHTML
+
+  return !!style.sheet.cssRules.length;
+}
+
+for(var selector in selectors) {
+  var test = selector + (selectors[selector]? '(' + selectors[selector] + ')' : '');
+
+  if(!supported(test) && supported(self.prefixSelector(test))) {
+    self.selectors.push(selector);
+  }
+}
+
+for(var atrule in atrules) {
+  var test = atrule + ' ' + (atrules[atrule] || '');
+
+  if(!supported('@' + test) && supported('@' + self.prefix + test)) {
+    self.atrules.push(atrule);
+  }
+}
+
+root.removeChild(style);
+
+})();
+
+// Properties that accept properties as their value
+self.valueProperties = [
+  'transition',
+  'transition-property'
+]
+
+// Add class for current prefix
+root.className += ' ' + self.prefix;
+
+StyleFix.register(self.prefixCSS);
+
+})(document.documentElement);</script>
+
 </head>
+
 <body>
-    <h1>YAY</h1>
+
+  <div class='snes'>
+  <div class='left'>
+    <div class='pad'>
+      <div class='control top'>
+        <div class='arrow'></div>
+      </div>
+      <div class='control left'>
+        <div class='arrow'></div>
+      </div>
+      <div class='control right'>
+        <div class='arrow'></div>
+      </div>
+      <div class='control bottom'>
+        <div class='arrow'></div>
+      </div>
+      <div class='control middle'></div>
+    </div>
+  </div>
+  <div class='middle'>
+    <div class='logo'></div>
+    <div class='logo clone'></div>
+    <div class='title'></div>
+    <button class='select'></button>
+    <button class='start'></button>
+  </div>
+  <div class='right'>
+    <div class='circle'>
+      <div class='group-1'>
+        <button class='green a'></button>
+        <button class='blue s'></button>
+      </div>
+      <div class='group-2'>
+        <button class='yellow z'></button>
+        <button class='red x'></button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="status">Status: Unknown</div>
+
+  <script>
+    if (document.location.search.match(/type=embed/gi)) {
+      window.parent.postMessage('resize', "*");
+    }
+    __bindToLinks();
+  </script>
+
+  <script>
+    /**
+  SNES Controller
+
+  Inspired by my real SNES Controller
+  https://twitter.com/TimPietrusky/status/230327339337252864/photo/1
+
+	Please note: This is work in progress!
+
+  2012 by Tim Pietrusky
+  timpietrusky.com
+**/
+    //@ sourceURL=pen.js
+  </script>
+
 </body>
+
 </html>
