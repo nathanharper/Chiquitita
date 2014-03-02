@@ -4,20 +4,37 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script type="text/javascript">
+        var KEYS = {
+            '38': 'up',
+            '40': 'down',
+            '37': 'left',
+            '39': 'right',
+            '13': 'return',
+            '16': 'rshift',
+            '88': 'x',
+            '90': 'z',
+            '83': 's',
+            '65': 'a'
+        };
         var socket = io.connect();
+        var make_key_func = function(action) {
+            return function(event) {
+                var key = event.which.toString();
+                if (!KEYS[key]) return;
+                socket.emit('key', {
+                    'key': KEYS[key],
+                    'action': action
+                });
+            };
+        };
         socket.on('connect', function() {
             $(function() {
-                $('window').keydown(function(event) {
-                    socket.emit('key', {
-                        'key': String.fromCharCode(event.with),
-                        'action': 'down'
-                    });
-                }).keyup(function(event) {
-                    socket.emit('key', {
-                        'key': String.fromCharCode(event.with),
-                        'action': 'up'
-                    });
-                });
+                console.log('Connected!');
+                $(document).keydown(
+                    make_key_func('down')
+                ).keyup(
+                    make_key_func('up')
+                );
             });
         }).on('disconnect', function() {
             alert("You've been disconnected!");

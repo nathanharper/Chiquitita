@@ -32,7 +32,9 @@ else if (protocol === 'http') {
 
     var websocket = io.listen(server);
     websocket.sockets.on('connection', function(client) {
-        client.on('key', do_keys);
+        client.on('key', function(data) {
+            do_keys(data.key, data.action);
+        });
     });
 }
 else {
@@ -43,7 +45,6 @@ else {
 function do_keys(key, action) {
     if (ENABLED.indexOf(key) < 0 || DIRS.indexOf(action) < 0) return;
     var command = "export DISPLAY=:0; xdotool key"+action+" --window "+id+" '"+firstUpper(key)+"'";
-    console.log(command);
     exec(command)
 }
 
