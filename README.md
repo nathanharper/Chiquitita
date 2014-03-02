@@ -4,6 +4,7 @@ This is some dirty hackery to get a "TwitchPlaysPokemon" type server running for
 
 <pre>
 sudo apt-get install nodejs zsnes love xdotool npm
+cp controller/secret.lua{.example,}
 ./run.sh super_mario.smc
 </pre>
 
