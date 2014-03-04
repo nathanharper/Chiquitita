@@ -21,7 +21,7 @@ This command will start up the zsnes emulator, start a server at http://localhos
 
 To just start the server with ZSNES already running, do this (replacing [PORT] with the port to run the server on):
 
-<pre>node server/server.js "$(xdotool search ZSNES|awk 'NR==1{print $1}')" [PORT] http</pre>
+<pre>node server/server.js "$(xdotool search --class ZSNES|awk 'NR==1{print $1}')" [PORT] http</pre>
 
 
 <h3>TODO</h3>

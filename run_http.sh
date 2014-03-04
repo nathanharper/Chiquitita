@@ -18,7 +18,7 @@ find_chrome() {
 
 zsnes "$1" &
 sleep 1
-ZSNES_ID="$(xdotool search ZSNES|awk 'NR==1{print $1}')"
+ZSNES_ID="$(xdotool search --class ZSNES|awk 'NR==1{print $1}')"
 echo "ZSNES_ID is $ZSNES_ID"
 node server/server.js "$ZSNES_ID" 12345 http &
 SERVER_PID="$!"
