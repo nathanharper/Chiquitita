@@ -44,7 +44,7 @@ else {
 
 function do_keys(key, action) {
     if (ENABLED.indexOf(key) < 0 || DIRS.indexOf(action) < 0) return;
-    var command = "export DISPLAY=:0; xdotool key"+action+" --window "+id+" '"+firstUpper(key)+"'";
+    var command = "DISPLAY=:0 xdotool key"+action+" --window "+id+" '"+firstUpper(key)+"'";
     exec(command)
 }
 
