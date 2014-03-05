@@ -21,18 +21,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     <script src="/socket.io/socket.io.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script type="text/javascript">
-        var KEYS = {
-            '38': 'up',
-            '40': 'down',
-            '37': 'left',
-            '39': 'right',
-            '13': 'return',
-            //'16': 'rshift',
-            '88': 'x',
-            '90': 'z',
-            '83': 's',
-            '65': 'a'
-        };
+        var KEYS;
         var PRESSED = [];
         var socket = io.connect();
         var make_key_func = function(action) {
@@ -60,21 +49,25 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                     'key': key,
                     'action': action
                 });
-                console.log('emitted '+key+' '+action);
             };
         };
+
         socket.on('connect', function() {
             $('#status').text('Status: connected').css('color', 'green');
+        }).on('disconnect', function() {
+            $('#status').text('Status: disconnected').css('color', 'red');
+            $(document).unbind('keydown').unbind('keyup');
+        });
+
+        socket.on('key map', function(data) {
+            KEYS = data;
             $(function() {
-                console.log('Connected!');
                 $(document).keydown(
                     make_key_func('down')
                 ).keyup(
                     make_key_func('up')
                 );
             });
-        }).on('disconnect', function() {
-            $('#status').text('Status: disconnected').css('color', 'red');
         });
     </script>
 

@@ -17,6 +17,24 @@ if (protocol === 'udp') {
 else if (protocol === 'http') {
     var io = require('socket.io');
     var fs = require('fs');
+    var key_map = {};
+    fs.readFile(__dirname+'/keys.json', 'utf8', function(err, data) {
+        if (err) {
+            console.log("Could not read key configuration.\n"+err);
+            process.exit(1);
+        }
+        try {
+            ENABLED = JSON.parse(data).map(function(k) {
+                key_map[k[1].toString()] = k[0];
+                return k[0];
+            });
+            console.log('enabled keys are '+ENABLED.toString());
+            console.log(key_map);
+        } catch (e) {
+            console.log("keys.json improperly formatted.\n"+e.toString());
+            process.exit(1);
+        }
+    });
     var server = require('http').createServer(function(req, res) {
         fs.readFile(__dirname+'/index.html', 'utf8', function(err, data) {
             if (err) {
@@ -32,6 +50,7 @@ else if (protocol === 'http') {
 
     var websocket = io.listen(server);
     websocket.sockets.on('connection', function(client) {
+        client.emit('key map', key_map);
         client.on('key', function(data) {
             do_keys(data.key, data.action);
         });

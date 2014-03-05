@@ -24,11 +24,17 @@ To just start the server with ZSNES already running, do this (replacing [PORT] w
 <pre>node server/server.js "$(xdotool search --class ZSNES|awk 'NR==1{print $1}')" [PORT] http</pre>
 
 
+<h3>Configuration</h3>
+<hr />
+
+If you're not using the default ZSNES configuration scheme, or you're trying to configure this for another emulator, you can change the server/keys.json file. It's a straightforward JSON array of char/key codes and the button name associated with each (for more details on the codes, check out jQuery's documentation for event.which).
+
+
 <h3>TODO</h3>
 <hr />
 
-* Non-default key-mappings aren't really supported right now :((((((((((
 * I'd like to make it so that subsequent keypresses always trump the prior one, to make the multi-player support a bit wackier.
+* Might be worth it to make a native Node binding to libxdo instead of delegating to shell.
 
 
 <h3>Special Thanks</h3>
