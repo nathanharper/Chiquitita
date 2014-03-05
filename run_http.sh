@@ -1,9 +1,11 @@
 #!/bin/bash
-URL="http://localhost:12345"
 if [ -z "$1" ]; then
     echo "Path to SNES ROM file required."
     exit 1
 fi
+
+export DISPLAY=:0
+URL="http://localhost:12345"
 
 find_chrome() {
     if hash chromium 2>/dev/null; then

@@ -3,6 +3,7 @@ if [ -z "$1" ]; then
     echo "Path to SNES ROM file required."
     exit 1
 fi
+export DISPLAY=:0
 zsnes "$1" &
 sleep 1
 ZSNES_ID="$(xdotool search --class ZSNES|awk 'NR==1{print $1}')"
